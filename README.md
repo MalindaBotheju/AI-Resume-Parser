@@ -24,3 +24,11 @@ The repository includes the original Google Colab notebook (`.ipynb`) used for i
 1. **Build the Docker Image:**
    ```bash
    docker build -t resume-parser .
+
+2. **Run the Container:**
+   ```bash
+   docker run -p 8080:8080 resume-parser
+
+3. **Open in Browser:**
+   ```bash
+   Navigate to http://localhost:8080 to access the web interface.
