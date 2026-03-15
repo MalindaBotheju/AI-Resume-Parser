@@ -1,0 +1,15 @@
+# Cache files
+__pycache__/
+*.pyc
+
+# Virtual environments (just in case you make one later)
+venv/
+env/
+.venv/
+
+# Docker
+.dockerignore
+
+# OS generated files
+.DS_Store
+Thumbs.db

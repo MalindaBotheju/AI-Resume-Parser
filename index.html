@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Parser</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Resume Parser</h1>
+            <p class="text-gray-400 mt-2">Powered by a local Fine-Tuned LLM (Ollama & FastAPI)</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <div class="w-full lg:w-1/2 flex flex-col gap-4">
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 shadow-lg flex-grow flex flex-col">
+                    <label class="text-sm font-semibold text-gray-400 mb-2 uppercase tracking-wider">Paste Text</label>
+                    <textarea id="resumeInput" class="w-full flex-grow bg-gray-950 text-gray-200 border border-gray-800 rounded-lg p-4 focus:outline-none focus:border-blue-500 transition-colors resize-none h-64" placeholder="Paste your resume text here..."></textarea>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 shadow-lg flex flex-col">
+                    <label class="text-sm font-semibold text-gray-400 mb-2 uppercase tracking-wider">Upload PDF</label>
+                    <input type="file" id="pdfInput" accept=".pdf" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-900 file:text-blue-300 hover:file:bg-blue-800 transition-colors cursor-pointer">
+                </div>
+
+                <button onclick="extractData()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-4 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2 mt-2">
+                    <span id="mainBtnText">Extract Resume Data</span>
+                </button>
+
+            </div>
+
+            <div class="w-full lg:w-1/2 bg-gray-900 border border-gray-800 rounded-xl p-4 shadow-lg flex flex-col">
+                <label class="text-sm font-semibold text-gray-400 mb-2 uppercase tracking-wider">Structured JSON Output</label>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-4 flex-grow overflow-auto h-full min-h-[500px] relative">
+                    <pre id="jsonOutput" class="text-sm font-mono text-green-400 whitespace-pre-wrap break-words">Waiting for input...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function extractData() {
+            const jsonOutput = document.getElementById('jsonOutput');
+            const fileInput = document.getElementById('pdfInput');
+            const textInput = document.getElementById('resumeInput').value;
+            const btnText = document.getElementById('mainBtnText');
+            
+            let response;
+
+            // 1. Check if user provided anything at all
+            if (fileInput.files.length === 0 && !textInput.trim()) {
+                return alert('Please either paste resume text or upload a PDF!');
+            }
+
+            // 2. Set UI Loading State
+            jsonOutput.innerText = 'Analyzing... This usually takes a few seconds.';
+            jsonOutput.className = 'text-sm font-mono text-gray-500 whitespace-pre-wrap break-words animate-pulse';
+            btnText.innerText = 'Processing...';
+
+            try {
+                // 3. Logic routing: Prioritize PDF if attached, otherwise use Text
+                if (fileInput.files.length > 0) {
+                    const formData = new FormData();
+                    formData.append("file", fileInput.files[0]);
+
+                    response = await fetch('/api/extract-pdf', {
+                        method: 'POST',
+                        body: formData 
+                    });
+                } else {
+                    response = await fetch('/api/extract', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: textInput })
+                    });
+                }
+
+                const result = await response.json();
+
+                // 4. Display formatting
+                jsonOutput.className = 'text-sm font-mono text-green-400 whitespace-pre-wrap break-words';
+                
+                if (result.status === "success" || result.status === "partial_success") {
+                    jsonOutput.innerText = typeof result.data === 'string' 
+                        ? result.data 
+                        : JSON.stringify(result.data, null, 2);
+                } else {
+                    jsonOutput.innerText = 'Error: ' + JSON.stringify(result);
+                    jsonOutput.className = 'text-sm font-mono text-red-400 whitespace-pre-wrap break-words';
+                }
+
+            } catch (error) {
+                jsonOutput.innerText = 'Failed to connect to backend. Is main.py running?';
+                jsonOutput.className = 'text-sm font-mono text-red-400 whitespace-pre-wrap break-words';
+            } finally {
+                // 5. Restore UI State
+                btnText.innerText = 'Extract Resume Data';
+            }
+        }
+    </script>
+</body>
+</html>
