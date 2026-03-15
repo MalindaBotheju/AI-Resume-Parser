@@ -30,5 +30,7 @@ The repository includes the original Google Colab notebook (`.ipynb`) used for i
    docker run -p 8080:8080 resume-parser
 
 3. **Open in Browser:**
+   Navigate to
    ```bash
-   Navigate to http://localhost:8080 to access the web interface.
+   http://localhost:8080 
+   to access the web interface.
