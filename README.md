@@ -2,6 +2,8 @@
 
 A containerized, privacy-first web application that leverages a locally hosted Llama-3 AI model to automatically extract and structure data from PDF resumes into clean JSON format.
 
+![App Screenshot](screenshot.png)
+
 ## 🚀 Features
 * **Privacy-First AI:** Uses a local Llama-3 GGUF model via Ollama. No sensitive resume data is ever sent to third-party APIs like OpenAI.
 * **Document Parsing:** Efficiently extracts raw text from PDF files using `PyMuPDF`.
